@@ -9,17 +9,21 @@ router.get("/", async (req, res) => {
     let typesParam = req.query.types || "";
     let selectedTypes = [];
 
+    /* récupération filtres */
+
     if (typeof typesParam === "string" && typesParam.trim() !== "") {
 
       selectedTypes = typesParam
         .split(",")
         .map(t => t.trim())
-        .filter(t => ["jiramae", "groupe1", "autre1"].includes(t));
+        .filter(t => ["tradi","moderne1","commune1"].includes(t));
 
     }
 
+    /* si aucun filtre */
+
     if (selectedTypes.length === 0) {
-      selectedTypes = ["jiramae", "groupe1", "autre1"];
+      selectedTypes = ["tradi","moderne1","commune1"];
     }
 
     const matchExpression = selectedTypes.join(" + ");
@@ -38,35 +42,36 @@ router.get("/", async (req, res) => {
 
               'type','Feature',
 
-              'geometry', ST_AsGeoJSON(ST_Transform(geom,4326))::jsonb,
+              'geometry', ST_AsGeoJSON(geom)::jsonb,
 
               'properties', jsonb_build_object(
 
                 'gid', gid,
                 'fokontany', fokontany,
                 'total1', total1,
-                'electricit', electricit,
-
-                'jiramae', jiramae,
-                'groupe1', groupe1,
-                'autre1', autre1,
 
                 'selected_total', (${matchExpression}),
 
-                'jirama_pct', ROUND(
-                  CAST((jiramae * 100.0) /
-                  NULLIF(jiramae + groupe1 + autre1,0) AS numeric),2
-                ),
+                'tradi_pct', ROUND(
+                  CAST(
+                    (tradi * 100.0) /
+                    NULLIF(tradi + moderne1 + commune1,0)
+                  AS numeric)
+                ,2),
 
-                'groupe_pct', ROUND(
-                  CAST((groupe1 * 100.0) /
-                  NULLIF(jiramae + groupe1 + autre1,0) AS numeric),2
-                ),
+                'moderne_pct', ROUND(
+                  CAST(
+                    (moderne1 * 100.0) /
+                    NULLIF(tradi + moderne1 + commune1,0)
+                  AS numeric)
+                ,2),
 
-                'autre_pct', ROUND(
-                  CAST((autre1 * 100.0) /
-                  NULLIF(jiramae + groupe1 + autre1,0) AS numeric),2
-                )
+                'commune_pct', ROUND(
+                  CAST(
+                    (commune1 * 100.0) /
+                    NULLIF(tradi + moderne1 + commune1,0)
+                  AS numeric)
+                ,2)
 
               )
 
@@ -93,7 +98,7 @@ router.get("/", async (req, res) => {
 
   catch (error) {
 
-    console.error(error);
+    console.error("ERREUR API :", error);
     res.status(500).json({ error: error.message });
 
   }

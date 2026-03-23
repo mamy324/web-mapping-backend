@@ -1,6 +1,6 @@
 
 
-  const express = require("express");
+const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
@@ -32,7 +32,7 @@ router.get("/", async (req, res) => {
             'properties', jsonb_build_object(
               'gid', gid,
               'fokontany', fokontany,
-
+               'total1', total1,
               'location_pct', ROUND( CAST(
                 (location1 * 100.0) /
                 NULLIF(location1 + famille1 + coloque + cite, 0)
@@ -75,4 +75,5 @@ router.get("/", async (req, res) => {
 });
 
 module.exports = router;
+
 
